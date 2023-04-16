@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+	<body>
+		<canvas id="myChart" style="width:100%;max-width:1500px"></canvas>
+
+		<script>
+			var xValues;
+			var yValues;
+			var barColors = [];
+
+			// YouTube API v3 API Key 
+			const apiKey = "AIzaSyA-ezdYu7DJ398hwNYT0XA5Z3T_e_t3pto"; 
+
+			// Playlists 
+			const playlistID = ""; 
+
+			Start(); 
+
+			// Functions 
+			function Start()
+			{
+				GetPlaylistVideoIds(playlistID, apiKey)
+				.then(videoIDList => 
+				{
+					// videoIDList.reverse(); 
+					console.log(videoIDList);
+
+					GetUploadDates(videoIDList)
+					.then(uploadDates => 
+					{
+						uploadDates = FormatDateList(uploadDates); 
+						xValues = uploadDates; 
+						barColors = ColorDates(uploadDates); 
+
+						console.log(uploadDates); 
+						GetVideoViews(videoIDList)
+						.then(videoViews => 
+						{
+							console.log(videoViews);
+							yValues = videoViews; 
+							CreateChart(); 
+						}) 
+						.catch(error => { console.error(error); });
+					}) 
+					.catch(error => { console.error(error) });
+				}) 
+				.catch(error => { console.error(error); });
+			}
+
+			function CreateChart()
+			{
+				new Chart("myChart", 
+				{
+					type: "bar",
+					data: 
+					{
+						labels: xValues,
+						datasets: 
+						[{
+							backgroundColor: barColors, 
+							data: yValues
+						}]
+					},
+					options: 
+					{
+						legend: {display: false},
+						title: 
+						{
+							display: true,
+							text: "Video Views"
+						}
+					}
+				}); 
+			}
+
+			function GetPlaylistVideoIds(playlistId, apiKey) 
+			{
+				return new Promise((resolve, reject) => 
+				{
+					const apiUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}`; 
+
+					let videoIds = [];
+
+					function GetPlaylistItems(nextPageToken) 
+					{
+						let url = apiUrl;
+						if (nextPageToken) 
+						{
+							url += `&pageToken=${nextPageToken}`;
+						}
+
+						fetch(url)
+						.then(response => response.json())
+						.then(data => 
+						{
+							data.items.forEach(item => 
+							{
+								videoIds.push(item.snippet.resourceId.videoId);
+							});
+
+							if (data.nextPageToken) 
+							{
+								GetPlaylistItems(data.nextPageToken);
+							} 
+							else 
+							{
+								resolve(videoIds.reverse());
+							}
+						})
+						.catch(error => reject(error));
+					}
+
+					GetPlaylistItems();
+				});
+			}
+
+			async function GetUploadDates(videoIds) 
+			{
+				const apiUrl = "https://www.googleapis.com/youtube/v3/videos";
+
+				const response = await fetch(`${apiUrl}?part=snippet&id=${videoIds.join(",")}&key=${apiKey}`);
+				const data = await response.json();
+
+				const uploadDates = data.items.map(item => item.snippet.publishedAt);
+				return uploadDates;
+			}
+
+			function FormatDateList(dateStrings) 
+			{
+				const monthNames = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+				return dateStrings.map(dateString => 
+				{
+					const date = new Date(dateString);
+					const month = monthNames[date.getMonth()];
+					const day = date.getDate();
+					let formattedDate = `${month} ${day}`;
+
+					if (date.getDay() === 0) 
+					{
+						formattedDate += " (Sun)";
+					} 
+					else if (date.getDay() === 1) 
+					{
+						formattedDate += " (Mon)";
+					} 
+					else if (date.getDay() === 2) 
+					{
+						formattedDate += " (Tue)";
+					} 
+					else if (date.getDay() === 3) 
+					{
+						formattedDate += " (Wed)";
+					} 
+					else if (date.getDay() === 4) 
+					{
+						formattedDate += " (Thu)";
+					} 
+					else if (date.getDay() === 5) 
+					{
+						formattedDate += " (Fri)";
+					} 
+					else if (date.getDay() === 6) 
+					{
+						formattedDate += " (Sat)";
+					} 
+
+					return formattedDate;
+				});
+			}
+
+			async function GetVideoViews(videoIds) 
+			{
+				const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds.join(',')}&key=${apiKey}`;
+				const response = await fetch(url);
+				const data = await response.json();
+				const videoViews = data.items.map(item => parseInt(item.statistics.viewCount));
+				return videoViews;
+			}
+
+			function ColorDates(dates) 
+			{
+				const colors = [];
+				for (let i = 0; i < dates.length; i++) 
+				{
+					if (dates[i].includes('Fri') || dates[i].includes('Sat') || dates[i].includes('Sun')) 
+					{
+						colors.push("rgba(0,0,0,0.8)");
+					} 
+					else 
+					{
+						colors.push("rgba(0,0,0,0.4)");
+					}
+				}
+
+				console.log(colors); 
+
+				return colors;
+			}
+
+		</script>
+	</body>
+</html>
