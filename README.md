@@ -5,7 +5,7 @@ This repo is mainly for some tools I've built that I'm using personally to help 
 ### Tools 
 <i> there's only the one so far </i> 
 
-- Playlist Viewer 
+- Playlist Views Visualizer
 	- Displays the amount of viewers per video in a giveo playlist 
 	- Videos tht released on Fri-Sun are displayed in black, others are displayed in grey. 
 	- Provide the PlaylistID in the `playlistID` variable. 
