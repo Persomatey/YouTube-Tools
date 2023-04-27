@@ -8,48 +8,186 @@
 			var xValues;
 			var yValues;
 			var barColors = [];
-
-			// YouTube API v3 API Key 
-			const apiKey = "AIzaSyA-ezdYu7DJ398hwNYT0XA5Z3T_e_t3pto"; 
-
-			// Playlists 
-			const playlistID = ""; 
+			var apiKey; // YouTube API v3 API Key 
+			var playlistID; 
+			var weekdayColor; 
+			var weekendColor; 
+			var namesOfVideos; 
 
 			Start(); 
 
-			// Functions 
+			/* Functions */  
+
 			function Start()
 			{
-				GetPlaylistVideoIds(playlistID, apiKey)
-				.then(videoIDList => 
+				// Fetch data from the config 
+				fetch('config.json')
+				.then(response => response.json())
+				.then(config => 
 				{
-					// videoIDList.reverse(); 
-					console.log(videoIDList);
+					apiKey = config.googleAPIKey;
+					weekdayColor = config.weekdayColor; 
+					weekendColor = config.weekendColor; 
 
-					GetUploadDates(videoIDList)
-					.then(uploadDates => 
+					// Fetch the platlist ID's from the .json 
+					fetch('playlistIDs.json')
+					.then(response => response.json())
+					.then(ids => 
 					{
-						uploadDates = FormatDateList(uploadDates); 
-						xValues = uploadDates; 
-						barColors = ColorDates(uploadDates); 
+						playlistID = ids[config.playlistName];
 
-						console.log(uploadDates); 
-						GetVideoViews(videoIDList)
-						.then(videoViews => 
+						// Get video ID's from all the videos in the playlist 
+						GetPlaylistVideoIds(playlistID, apiKey)
+						.then(preDeletedVideoIDList => 
 						{
-							console.log(videoViews);
-							yValues = videoViews; 
-							CreateChart(); 
+							RemoveDeletedVideos(preDeletedVideoIDList) 
+							.then (videoIDList => 
+							{
+								console.log(`list has ${videoIDList.length} videos in it `); 
+								// Get upload dates of every video in the playlist 
+								GetUploadDates(videoIDList)
+								.then(uploadDates => 
+								{
+									GetVideoNames(videoIDList)
+									.then(videoNames => 
+									{
+										GetVideoViews(videoIDList)
+										.then(videoViews => 
+										{
+											// Sort videos 
+											const sortedVideos = SortVideosByDate(videoIDList, uploadDates, videoViews, videoNames); 
+
+											uploadDates = sortedVideos.dates; 
+											videoIDList = sortedVideos.videoIDs; 
+											videoViews = sortedVideos.videoViews;
+											namesOfVideos = sortedVideos.videoNames; 
+
+											uploadDates = FormatDateList(uploadDates); 
+											barColors = ColorDates(uploadDates); 
+											xValues = uploadDates; 
+											yValues = videoViews; 
+
+											// Create the chart 
+											CreateChart(); 
+										}) 
+										.catch(error => { console.error(error); });
+									}); 
+								}); 
+							}) 
+							.catch(error => { console.error(error); });
 						}) 
 						.catch(error => { console.error(error); });
-					}) 
-					.catch(error => { console.error(error) });
-				}) 
+					})
+					.catch(error => { console.error(error); });
+				})
 				.catch(error => { console.error(error); });
+			}
+
+			async function RemoveDeletedVideos(videoIDs) 
+			{
+				const videosToDelete = [];
+				
+				// Loop through each video ID and check if it's available on YouTube
+				for (let i = 0; i < videoIDs.length; i++) {
+					const videoID = videoIDs[i];
+					const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoID}&key=${apiKey}&part=status`;
+					
+					try {
+					const response = await fetch(url);
+					const data = await response.json();
+					
+					if (data.items.length === 0 || data.items[0].status.uploadStatus === 'deleted') {
+						videosToDelete.push(videoID);
+					}
+					} catch (error) {
+					console.error(error);
+					}
+				}
+				
+				// Remove the videos that are no longer available from the input array
+				for (let i = 0; i < videosToDelete.length; i++) {
+					const index = videoIDs.indexOf(videosToDelete[i]);
+					videoIDs.splice(index, 1);
+				}
+				
+				// Return the updated array of video IDs
+				return videoIDs;
+			}
+
+			function SortVideosByDate(videoIDs, dates, videoViews, videoNames) 
+			{
+				const videos = [];
+				
+				// Create an array of objects containing video ID, date, and view information
+				for (let i = 0; i < videoIDs.length; i++) 
+				{
+					videos.push({ id: videoIDs[i], date: new Date(dates[i]), views: videoViews[i], name: videoNames[i] });
+				}
+				
+				// Sort the videos array by date in ascending order
+				videos.sort((a, b) => a.date - b.date);
+				
+				// Separate the sorted video IDs, dates, and views into their own arrays
+				const sortedIDs = videos.map(video => video.id);
+				const sortedDates = videos.map(video => video.date.toISOString());
+				const sortedViews = videos.map(video => video.views);
+				const sortedNames = videos.map(video => video.name);
+				
+				// Return an object containing the sorted arrays
+				return { videoIDs: sortedIDs, dates: sortedDates, videoViews: sortedViews, videoNames: sortedNames };
+			}
+
+			async function GetVideoNames(videoIDs) 
+			{
+				const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoIDs.join(',')}&key=${apiKey}`);
+				const data = await response.json();
+				const videoNames = data.items.map(item => item.snippet.title);
+				return videoNames;
+			}
+
+			function ConvertDate(dateStr) 
+			{
+				// Parse the input date string
+				const date = new Date(dateStr);
+
+				// Format the output date string in ISO-8601 format
+				const year = date.getUTCFullYear();
+				const month = `0${date.getUTCMonth() + 1}`.slice(-2);
+				const day = `0${date.getUTCDate()}`.slice(-2);
+				const hours = `0${date.getUTCHours()}`.slice(-2);
+				const minutes = `0${date.getUTCMinutes()}`.slice(-2);
+				const seconds = `0${date.getUTCSeconds()}`.slice(-2);
+				const isoDateStr = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+
+				return isoDateStr;
+			}
+
+			async function GetYouTubeVideoPublishDate(videoId) 
+			{
+				const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`;
+				
+				try 
+				{
+					const response = await fetch(apiUrl);
+					const data = await response.json();
+					
+					if (data.items.length === 0) 
+					{
+						throw new Error('Video not found');
+					}
+					
+					const publishDate = data.items[0].snippet.publishedAt;
+					return publishDate;
+				} catch (error) 
+				{
+					console.error(error);
+				}
 			}
 
 			function CreateChart()
 			{
+				var customData = namesOfVideos;
+
 				new Chart("myChart", 
 				{
 					type: "bar",
@@ -59,22 +197,50 @@
 						datasets: 
 						[{
 							backgroundColor: barColors, 
-							data: yValues
+							data: yValues,
+							customData: customData
 						}]
 					},
 					options: 
 					{
-						legend: {display: false},
+						legend: 
+						{
+							display: false
+						},
 						title: 
 						{
 							display: true,
 							text: "Video Views"
+						},
+						tooltips: 
+						{
+							mode: "index",
+							intersect: false,
+							displayColors: false,
+							callbacks: 
+							{
+								title: function(tooltipItems, data) 
+								{
+									return data.labels[tooltipItems[0].index];
+								},
+								label: function(tooltipItem, data) 
+								{
+									var datasetLabel = data.datasets[tooltipItem.datasetIndex].label || '';
+									var value = tooltipItem.yLabel;
+									return datasetLabel + 'Views: ' + value;
+								},
+								footer: function(tooltipItems, data) 
+								{
+									var vidName = customData[tooltipItems[0].index]; 
+									return customData[tooltipItems[0].index];
+								}
+							}
 						}
 					}
 				}); 
 			}
 
-			function GetPlaylistVideoIds(playlistId, apiKey) 
+			function GetPlaylistVideoIds(playlistId) 
 			{
 				return new Promise((resolve, reject) => 
 				{
@@ -178,6 +344,17 @@
 				return videoViews;
 			}
 
+			async function GetSingleVideoViews(videoId) 
+			{
+				const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=statistics`;
+
+				const response = await fetch(apiUrl);
+				const data = await response.json();
+				const videoViews = data.items.map(item => parseInt(item.statistics.viewCount));
+				console.log(`${videoId} had ${videoViews} views`); 
+				return videoViews;
+			}
+
 			function ColorDates(dates) 
 			{
 				const colors = [];
@@ -185,16 +362,13 @@
 				{
 					if (dates[i].includes('Fri') || dates[i].includes('Sat') || dates[i].includes('Sun')) 
 					{
-						colors.push("rgba(0,0,0,0.8)");
+						colors.push(weekendColor);
 					} 
 					else 
 					{
-						colors.push("rgba(0,0,0,0.4)");
+						colors.push(weekdayColor);
 					}
 				}
-
-				console.log(colors); 
-
 				return colors;
 			}
 
