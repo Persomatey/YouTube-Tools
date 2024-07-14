@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "positive-apex-390705",
+  "private_key_id": "664564c1839dda8525a77741d418672a668a5fec",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDgrgEPcXp5w37x\nfm81yhbDgZqV2uMzsbKe238EgdO0FYES2JaYAfK7sl7OrdlE5NR7X1F+laVdX93v\nEs87CDk5igJnMYuGkkF+gM/h03pzpdIh8tQqk39ZLkLWlhAzFdFoSf9hzDzgUJiK\nJISBxf5/v3hghPjShC2mFFUS3z7rf2YEIJJ1g2uoca0F7xbYBr4w/qpZea0QiaiS\nrfPtB8ig3MUaKj8JC559GKoZ80OkHuf6vq7ogZ4VWa9JkeVCTXmV1rPEvcOwcQ+A\nDN15oy+fN7cCojydUOK3qRDTKA4zJSDnLWAyYT9woG8Joia3DkPg6hszpBsa3BMO\nXuPmDjKpAgMBAAECggEAGCEr4TsWVJclrh0eZ7QWVYUY42Tsf2/jP2sSlTr1r+qa\nz/m1k6nq5hRSGQeD9OGP/dd27r220qRB9yPpoF0B2096cld4dPmGYeYG3WmLRjoN\n6yIzfcaVN9BPcpEPeJMMaDNBQ4EuHQee2EAzgGXxjwnyzUfemqpCJkra96HE9cDH\nghRhYbmw3BByZ3V5GiXV/9WDgmYxMbyhdttVe57eDe5EtqIxn9P5Vq5b8/alANbi\nEmT9l7V7LgnujBHiAHz8hXkYC7Xey3RZLiog8qcki0Tbj2ZljnzXwzgsxhWFB8i5\n/XGz9D3k6/8+4ToOtY0HnKXDjpDubjm1FqctjJlkQQKBgQDwCyD5QrkdxHDCwcZ9\n3pxpOiynBaqvP3KUEPUzG2Q+hKtFWhY1Bb9WJVcPi6TSnTcf1AKyAcyyjzqDr70c\nCldVVqUjHRJH1B4hMZ2bjWLnFNtFJz+ly3G7G/oPZyNgFwzSPdcFu3BjJxhnr4wa\nongtPA2KZvlnoynTlQLY6pBC6QKBgQDvnW1C8ob+pkFlD8hkLQZk9i7x1xO1Xuy6\nBczovSYMs8DCOB5SsUevP01x3K4Xkg9RIcWWBlWFLUUZQp9peCiW2PYWRlUPJFSw\npW8xvshjsgYakFZpH2AEKnbcbBNoGJ8E8Vsj1yMC9rhEXfLJbeTHKPzNT39XVgdp\nJdlIWssZwQKBgC+0BnmCqQchYsdRewDInIzM4tLObX0mPr7uH8xoRSOneeHuZTtk\nSQH1qbeNKNQyKiJJH8AAW42gqSBCbHKGG5T6AxdXT6q2nMY79fZTwrPpkSnNAvkP\n1So6BRfKh10xN3sQjwq0lUEfI9p3KICiiP90T7yRej7+TfGeS1KQStsBAoGAcQFR\n0k0HFXnbRYpX+8awSVVBdpT0mokWI/UwWmM6Wqs7sV0+D8nEAQZdw+FLyZn810qS\nINsD4jcja3JcNCWTHvFbvc2Vt/puZpDfDBrp7vq6njSMTC+b3NsaC4J89I8IEBCz\n5wdDX9ZzuOqF4jGNv8+4yis/5zSPciuDefg36QECgYBJ7vlHtKUamIxbVpfnB7ZI\nrCigGHVP6OO2mM7ylvfSIkZuUkyJcsq5xa1yIAJAadxPuNzMoxI5cIMJDElT/N4o\n61XM01KyKdd7RVWnIR7jRUq8CTLEsGdQU4DP/8trJs0F+LMciBLDOnqQy8KJyA+q\nMW9QdZchejB4jP+Br2YdOA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "youtube-batch-uploader@positive-apex-390705.iam.gserviceaccount.com",
+  "client_id": "111833336153661947911",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/youtube-batch-uploader%40positive-apex-390705.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
